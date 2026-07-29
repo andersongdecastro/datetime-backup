@@ -10,12 +10,6 @@ ORIGEM="/home/andersoncastro/pulse-backup"
 # Diretório de destino
 DESTINO="/home/andersoncastro/MEGA/backups/pulse-backup/Linux"
 
-# Arquivos/pastas NÃO ocultos que NÃO devem ser incluídos
-EXCLUSOES=("go" "snap")
-
-# Arquivos/pastas ocultos que DEVEM ser incluídos
-INCLUIR_OCULTOS=(".ssh")
-
 
 # ---------------------------------------------
 # DATA e NOME DO ARQUIVO
@@ -30,33 +24,6 @@ ARQUIVO="home_son_${ANO}-${MES}-${DIA}_${HORA}-${MIN}.tar.zst"
 
 
 # ---------------------------------------------
-# CONSTRUÇÃO DA LISTA DE ITENS PARA BACKUP
-# ---------------------------------------------
-
-cd "$ORIGEM" || exit 1
-
-# Pega todos os itens NÃO ocultos
-ITENS=()
-for item in *; do
-    [ -e "$item" ] || continue
-
-    # Se estiver na lista de exclusões, pula
-    if printf '%s\n' "${EXCLUSOES[@]}" | grep -qx "$item"; then
-        continue
-    fi
-
-    ITENS+=("$item")
-done
-
-# Adiciona itens ocultos especificados
-for oculto in "${INCLUIR_OCULTOS[@]}"; do
-    if [ -e "$oculto" ]; then
-        ITENS+=("$oculto")
-    fi
-done
-
-
-# ---------------------------------------------
 # EXECUTANDO O BACKUP (TAR + ZSTD)
 # ---------------------------------------------
 
@@ -64,7 +31,9 @@ echo "➡ Criando backup em: $DESTINO/$ARQUIVO"
 
 # --zstd ativa compressão Zstandard
 # -cf cria arquivo tar
-tar --zstd -cf "$DESTINO/$ARQUIVO" "${ITENS[@]}"
+# -C muda para ORIGEM antes de compactar; "." inclui tudo (arquivos, pastas,
+# ocultos e subdiretórios), sem exclusões
+tar --zstd -cf "$DESTINO/$ARQUIVO" -C "$ORIGEM" .
 
 
 # ---------------------------------------------
