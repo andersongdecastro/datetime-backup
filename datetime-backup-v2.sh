@@ -37,11 +37,11 @@ tar --zstd -cf "$DESTINO/$ARQUIVO" -C "$ORIGEM" .
 
 
 # ---------------------------------------------
-# MANTER APENAS OS ÚLTIMOS 3 BACKUPS
+# MANTER APENAS OS ÚLTIMOS 2 BACKUPS
 # ---------------------------------------------
 
 cd "$DESTINO" || exit 1
 
-ls -1tr home_son_*.tar.zst | head -n -3 | xargs -r rm --
+ls -1tr home_son_*.tar.zst | head -n -2 | xargs -r rm --
 
 echo "✔ Backup finalizado!"
