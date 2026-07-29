@@ -1,0 +1,5 @@
+# Normaliza automaticamente arquivos de texto
+* text=auto
+
+# Scripts de shell
+*.sh text eol=lf
