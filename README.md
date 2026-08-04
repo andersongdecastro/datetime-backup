@@ -6,10 +6,10 @@ O repositório contém dois pares independentes de script + unidades systemd:
 
 | Arquivo | Papel |
 | --- | --- |
-| `datetime-backup-v1-0.sh` | Script de backup de `/home/son` |
+| `datetime-backup-v1-0.sh` | Script de backup v1 — origem/destino definidos em `datetime-backup-v1-0.env` |
 | `datetime-backup-v1-1.service` | Unidade systemd (oneshot) que executa o script v1 |
 | `datetime-backup-v1-2.timer` | Timer que dispara o serviço v1 diariamente às 04:00 |
-| `datetime-backup-v2-0.sh` | Script de backup de `/home/andersoncastro/pulse-backup` |
+| `datetime-backup-v2-0.sh` | Script de backup v2 — origem/destino definidos em `datetime-backup-v2-0.env` |
 | `datetime-backup-v2-1.service` | Unidade systemd (oneshot) que executa o script v2 |
 | `datetime-backup-v2-2.timer` | Timer que dispara o serviço v2 diariamente às 04:00 |
 
@@ -44,14 +44,14 @@ copiar/editar.
 - **Origem/Destino:** definidos em `datetime-backup-v1-0.env`
 - **Exclusões:** `go`, `snap`
 - **Ocultos incluídos:** `.ssh`
-- **Nome do arquivo:** `home_son_AAAA-MM-DD_HH-MM.tar.zst`
+- **Nome do arquivo:** `${PREFIXO}_AAAA-MM-DD_HH-MM.tar.zst`
 - **Retenção:** mantém apenas os **3** backups mais recentes
 
 ### v2 — `datetime-backup-v2-0.sh`
 
 - **Origem/Destino:** definidos em `datetime-backup-v2-0.env`
 - **Exclusões:** nenhuma (backup completo, incluindo ocultos)
-- **Nome do arquivo:** `pulse-backup_AAAA-MM-DD_HH-MM.tar.zst`
+- **Nome do arquivo:** `${PREFIXO}_AAAA-MM-DD_HH-MM.tar.zst`
 - **Retenção:** mantém apenas os **2** backups mais recentes
 
 Para ajustar exclusões ou retenção, edite as variáveis no topo do script
@@ -91,8 +91,8 @@ Description=Executa o script datetime-backup-v1-0.sh
 
 [Service]
 Type=oneshot
-User=andersoncastro
-ExecStart=/home/andersoncastro/pulse-backup/git/github-andersongdecastro/datetime-backup/datetime-backup-v1-0.sh
+User=<seu-usuario>
+ExecStart=/caminho/para/datetime-backup/datetime-backup-v1-0.sh
 ```
 
 ### 3. Instalar o timer
@@ -196,7 +196,7 @@ systemd-analyze verify /etc/systemd/system/datetime-backup-v1-2.timer
 ## Estrutura final (exemplo v1)
 
 ```
-/home/andersoncastro/pulse-backup/git/github-andersongdecastro/datetime-backup/datetime-backup-v1-0.sh
+/caminho/para/datetime-backup/datetime-backup-v1-0.sh
 /etc/systemd/system/datetime-backup-v1-1.service
 /etc/systemd/system/datetime-backup-v1-2.timer
 ```
