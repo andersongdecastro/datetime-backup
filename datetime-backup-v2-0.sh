@@ -24,7 +24,7 @@ DIA=$(date +%d)
 HORA=$(date +%H)
 MIN=$(date +%M)
 
-ARQUIVO="pulse-backup_${ANO}-${MES}-${DIA}_${HORA}-${MIN}.tar.zst"
+ARQUIVO="${PREFIXO}_${ANO}-${MES}-${DIA}_${HORA}-${MIN}.tar.zst"
 
 
 # ---------------------------------------------
@@ -46,6 +46,6 @@ tar --zstd -cf "$DESTINO/$ARQUIVO" -C "$ORIGEM" .
 
 cd "$DESTINO" || exit 1
 
-ls -1tr pulse-backup_*.tar.zst | head -n -2 | xargs -r rm --
+ls -1tr "${PREFIXO}"_*.tar.zst | head -n -2 | xargs -r rm --
 
 echo "✔ Backup finalizado!"
