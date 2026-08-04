@@ -1,0 +1,10 @@
+#
+# Colocar este service em /etc/systemd/system/datetime-backup-v2-1.service com proprietário root
+# 
+[Unit]
+Description=Executa o script datetime-backup-v2-0.sh
+
+[Service]
+Type=oneshot
+User=andersoncastro
+ExecStart=/home/andersoncastro/pulse-backup/git/github-andersongdecastro/datetime-backup/datetime-backup-v2-0.sh
