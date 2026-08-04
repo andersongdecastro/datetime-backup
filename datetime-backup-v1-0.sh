@@ -35,7 +35,7 @@ DIA=$(date +%d)
 HORA=$(date +%H)
 MIN=$(date +%M)
 
-ARQUIVO="home_son_${ANO}-${MES}-${DIA}_${HORA}-${MIN}.tar.zst"
+ARQUIVO="${PREFIXO}_${ANO}-${MES}-${DIA}_${HORA}-${MIN}.tar.zst"
 
 
 # ---------------------------------------------
@@ -82,6 +82,6 @@ tar --zstd -cf "$DESTINO/$ARQUIVO" "${ITENS[@]}"
 
 cd "$DESTINO" || exit 1
 
-ls -1tr home_son_*.tar.zst | head -n -3 | xargs -r rm --
+ls -1tr "${PREFIXO}"_*.tar.zst | head -n -3 | xargs -r rm --
 
 echo "✔ Backup finalizado!"
