@@ -1,14 +1,23 @@
 #!/bin/bash
 
 # ---------------------------------------------
+# CARREGAR ORIGEM/DESTINO DO ARQUIVO .env
+# ---------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/datetime-backup-v1-0.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Erro: arquivo de configuração não encontrado: $ENV_FILE" >&2
+    echo "Copie datetime-backup-v1-0.env.example para $(basename "$ENV_FILE") e ajuste ORIGEM e DESTINO." >&2
+    exit 1
+fi
+
+source "$ENV_FILE"
+
+
+# ---------------------------------------------
 # CONFIGURAÇÕES
 # ---------------------------------------------
-
-# Diretório de origem
-ORIGEM="/home/son"
-
-# Diretório de destino
-DESTINO="/mnt/d/OneDrive/backups/home_son"
 
 # Arquivos/pastas NÃO ocultos que NÃO devem ser incluídos
 EXCLUSOES=("go" "snap")

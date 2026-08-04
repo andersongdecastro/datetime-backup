@@ -1,14 +1,18 @@
 #!/bin/bash
 
 # ---------------------------------------------
-# CONFIGURAÇÕES
+# CARREGAR ORIGEM/DESTINO DO ARQUIVO .env
 # ---------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/datetime-backup-v2-0.env"
 
-# Diretório de origem
-ORIGEM="/home/andersoncastro/pulse-backup"
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Erro: arquivo de configuração não encontrado: $ENV_FILE" >&2
+    echo "Copie datetime-backup-v2-0.env.example para $(basename "$ENV_FILE") e ajuste ORIGEM e DESTINO." >&2
+    exit 1
+fi
 
-# Diretório de destino
-DESTINO="/home/andersoncastro/MEGA/backups/pulse-backup/Linux"
+source "$ENV_FILE"
 
 
 # ---------------------------------------------

@@ -21,10 +21,27 @@ O repositório contém dois pares independentes de script + unidades systemd:
 
 ## Configuração dos scripts
 
+`ORIGEM` e `DESTINO` **não** ficam mais hardcoded nos scripts, pois são caminhos
+específicos de cada máquina/dev e não devem ir para o repositório remoto. Em vez
+disso, cada script carrega essas duas variáveis de um arquivo `.env` próprio,
+localizado ao lado do script e ignorado pelo git (veja `.gitignore`). O
+repositório versiona apenas um `.env.example` com valores genéricos, que serve de
+modelo.
+
+Antes de rodar qualquer um dos scripts pela primeira vez:
+
+```bash
+cp datetime-backup-v1-0.env.example datetime-backup-v1-0.env
+cp datetime-backup-v2-0.env.example datetime-backup-v2-0.env
+```
+
+E edite `ORIGEM`/`DESTINO` em cada `.env` com os caminhos reais. Se o `.env`
+correspondente não existir, o script aborta com uma mensagem explicando o que
+copiar/editar.
+
 ### v1 — `datetime-backup-v1-0.sh`
 
-- **Origem:** `/home/son`
-- **Destino:** `/mnt/d/OneDrive/backups/home_son`
+- **Origem/Destino:** definidos em `datetime-backup-v1-0.env`
 - **Exclusões:** `go`, `snap`
 - **Ocultos incluídos:** `.ssh`
 - **Nome do arquivo:** `home_son_AAAA-MM-DD_HH-MM.tar.zst`
@@ -32,17 +49,25 @@ O repositório contém dois pares independentes de script + unidades systemd:
 
 ### v2 — `datetime-backup-v2-0.sh`
 
-- **Origem:** `/home/andersoncastro/pulse-backup`
-- **Destino:** `/home/andersoncastro/MEGA/backups/pulse-backup/Linux`
+- **Origem/Destino:** definidos em `datetime-backup-v2-0.env`
 - **Exclusões:** nenhuma (backup completo, incluindo ocultos)
 - **Nome do arquivo:** `pulse-backup_AAAA-MM-DD_HH-MM.tar.zst`
 - **Retenção:** mantém apenas os **2** backups mais recentes
 
-Para ajustar origem, destino, exclusões ou retenção, edite as variáveis no topo do script correspondente.
+Para ajustar exclusões ou retenção, edite as variáveis no topo do script
+correspondente. Para ajustar origem/destino, edite o `.env` correspondente.
 
 ## Instalação (systemd service + timer)
 
 Os passos abaixo servem tanto para v1 quanto para v2 — basta usar o conjunto de arquivos correspondente (`v1` ou `v2`). Os exemplos usam v1.
+
+### 0. Criar e ajustar o `.env`
+
+```bash
+cp datetime-backup-v1-0.env.example datetime-backup-v1-0.env
+```
+
+Edite `datetime-backup-v1-0.env` com os valores reais de `ORIGEM` e `DESTINO`.
 
 ### 1. Permissão de execução ao script
 

@@ -7,3 +7,6 @@
 # Unidades systemd
 *.service text eol=lf
 *.timer text eol=lf
+
+# Arquivos de configuração .env / .env.example
+*.env* text eol=lf
