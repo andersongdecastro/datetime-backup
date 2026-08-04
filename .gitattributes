@@ -3,3 +3,7 @@
 
 # Scripts de shell
 *.sh text eol=lf
+
+# Unidades systemd
+*.service text eol=lf
+*.timer text eol=lf
