@@ -1,138 +1,154 @@
-# Timer do systemd
+# datetime-backup
 
-## 1\. Permissão de execução ao script
+Backups automatizados via `tar --zstd` + `systemd timer`, com nome de arquivo baseado em data/hora e retenção automática dos backups mais recentes.
+
+O repositório contém dois pares independentes de script + unidades systemd:
+
+| Arquivo | Papel |
+| --- | --- |
+| `datetime-backup-v1-0.sh` | Script de backup de `/home/son` |
+| `datetime-backup-v1-1.service` | Unidade systemd (oneshot) que executa o script v1 |
+| `datetime-backup-v1-2.timer` | Timer que dispara o serviço v1 diariamente às 04:00 |
+| `datetime-backup-v2-0.sh` | Script de backup de `/home/andersoncastro/pulse-backup` |
+| `datetime-backup-v2-1.service` | Unidade systemd (oneshot) que executa o script v2 |
+| `datetime-backup-v2-2.timer` | Timer que dispara o serviço v2 diariamente às 04:00 |
+
+## Requisitos
+
+- `bash`
+- `tar` com suporte a Zstandard (pacote `zstd` instalado)
+- `systemd` (para agendamento via `.service`/`.timer`)
+
+## Configuração dos scripts
+
+### v1 — `datetime-backup-v1-0.sh`
+
+- **Origem:** `/home/son`
+- **Destino:** `/mnt/d/OneDrive/backups/home_son`
+- **Exclusões:** `go`, `snap`
+- **Ocultos incluídos:** `.ssh`
+- **Nome do arquivo:** `home_son_AAAA-MM-DD_HH-MM.tar.zst`
+- **Retenção:** mantém apenas os **3** backups mais recentes
+
+### v2 — `datetime-backup-v2-0.sh`
+
+- **Origem:** `/home/andersoncastro/pulse-backup`
+- **Destino:** `/home/andersoncastro/MEGA/backups/pulse-backup/Linux`
+- **Exclusões:** nenhuma (backup completo, incluindo ocultos)
+- **Nome do arquivo:** `pulse-backup_AAAA-MM-DD_HH-MM.tar.zst`
+- **Retenção:** mantém apenas os **2** backups mais recentes
+
+Para ajustar origem, destino, exclusões ou retenção, edite as variáveis no topo do script correspondente.
+
+## Instalação (systemd service + timer)
+
+Os passos abaixo servem tanto para v1 quanto para v2 — basta usar o conjunto de arquivos correspondente (`v1` ou `v2`). Os exemplos usam v1.
+
+### 1. Permissão de execução ao script
 
 ```bash
-chmod +x arquivo.sh
+chmod +x datetime-backup-v1-0.sh
 ```
 
-A primeira linha do `arquivo.sh` deve ser:
+### 2. Instalar o serviço
+
+Copiar a unidade para `/etc/systemd/system/`, com proprietário root:
 
 ```bash
-#!/usr/bin/env bash
+sudo cp datetime-backup-v1-1.service /etc/systemd/system/
 ```
 
-Ou pode ser mais específico da maneira abaixo. É mais recomendado no ecossistema Ubuntu:
-
-```bash
-#!/bin/bash
-```
-
-## 2\. Criar o serviço
-
-```bash
-sudo nano /etc/systemd/system/arquivo.service
-```
-
-Colocar o conteúdo abaixo:
+O `ExecStart` já aponta para o caminho absoluto do script neste repositório:
 
 ```ini
 [Unit]
-Description=Executa o script arquivo.sh
+Description=Executa o script datetime-backup-v1-0.sh
 
 [Service]
 Type=oneshot
 User=andersoncastro
-ExecStart=/home/andersoncastro/scripts/arquivo.sh
+ExecStart=/home/andersoncastro/pulse-backup/git/github-andersongdecastro/datetime-backup/datetime-backup-v1-0.sh
 ```
 
-## 3\. Criar o timer
+### 3. Instalar o timer
 
 ```bash
-sudo nano /etc/systemd/system/arquivo.timer
+sudo cp datetime-backup-v1-2.timer /etc/systemd/system/
 ```
-
-Colocar o conteúdo abaixo:
 
 ```ini
 [Unit]
-Description=Executa arquivo.sh diariamente às 04:00
+Description=Executa o script datetime-backup-v1-0.sh diariamente às 04:00
 
 [Timer]
 OnCalendar=*-*-* 04:00:00
 Persistent=true
-Unit=arquivo.service
+Unit=datetime-backup-v1-1.service
 
 [Install]
 WantedBy=timers.target
 ```
 
-## 4\. Recarregar o systemd
+### 4. Recarregar o systemd
 
 ```bash
 sudo systemctl daemon-reload
 ```
 
-## 5\. Ativar e iniciar o timer
+### 5. Ativar e iniciar o timer
 
 ```bash
-sudo systemctl enable --now arquivo.timer
+sudo systemctl enable --now datetime-backup-v1-2.timer
 ```
 
-## 6\. Verificar o timer
+### 6. Verificar o timer
 
-```
-systemctl status arquivo.timer
+```bash
+systemctl status datetime-backup-v1-2.timer
 ```
 
 Para listar todos os timers e conferir a próxima execução:
 
-```
+```bash
 systemctl list-timers --all
 ```
 
-Você deverá encontrar uma linha referente a:
+Você deverá encontrar uma linha referente a `datetime-backup-v1-2.timer`.
 
-```
-arquivo.timer
-```
-
-## 7\. Testar o serviço manualmente
+### 7. Testar o serviço manualmente
 
 Antes de esperar até as 04:00, testar:
 
-```
-sudo systemctl start arquivo.service
+```bash
+sudo systemctl start datetime-backup-v1-1.service
 ```
 
 Depois ver o resultado:
 
-```
-systemctl status arquivo.service
-```
-
-Um serviço com:
-
-```
-Type=oneshot
+```bash
+systemctl status datetime-backup-v1-1.service
 ```
 
-executa uma tarefa e termina. Por isso, depois de uma execução bem-sucedida, o estado pode aparecer como:
+Um serviço com `Type=oneshot` executa uma tarefa e termina. Por isso, depois de uma execução bem-sucedida, o estado pode aparecer como `inactive (dead)`. Isso é normal para esse tipo de serviço.
 
-```
-inactive (dead)
-```
-
-Isso é normal para esse tipo de serviço.
-
-## 8\. Consultar os registros
+### 8. Consultar os registros
 
 Para consultar os registros da última execução:
 
-```
-journalctl -u arquivo.service
+```bash
+journalctl -u datetime-backup-v1-1.service
 ```
 
 Para ver somente os registros do boot atual:
 
-```
-journalctl -u arquivo.service -b
+```bash
+journalctl -u datetime-backup-v1-1.service -b
 ```
 
 Para acompanhar em tempo real:
 
-```
-journalctl -u arquivo.service -f
+```bash
+journalctl -u datetime-backup-v1-1.service -f
 ```
 
 ## Evitar execução simultânea
@@ -141,33 +157,31 @@ O systemd normalmente não inicia uma segunda instância do mesmo serviço enqua
 
 ## Depois de editar um `.service` ou `.timer`, recarregar as unidades
 
-```
+```bash
 sudo systemctl daemon-reload
 ```
 
 Para verificar se os arquivos possuem erros:
 
-```
-systemd-analyze verify /etc/systemd/system/arquivo.service
-systemd-analyze verify /etc/systemd/system/arquivo.timer
+```bash
+systemd-analyze verify /etc/systemd/system/datetime-backup-v1-1.service
+systemd-analyze verify /etc/systemd/system/datetime-backup-v1-2.timer
 ```
 
-## Estrutura final
-
-Será:
+## Estrutura final (exemplo v1)
 
 ```
-/home/andersoncastro/scripts/arquivo.sh
-/etc/systemd/system/arquivo.service
-/etc/systemd/system/arquivo.timer
+/home/andersoncastro/pulse-backup/git/github-andersongdecastro/datetime-backup/datetime-backup-v1-0.sh
+/etc/systemd/system/datetime-backup-v1-1.service
+/etc/systemd/system/datetime-backup-v1-2.timer
 ```
 
 E os comandos principais serão:
 
-```
+```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now arquivo.timer
+sudo systemctl enable --now datetime-backup-v1-2.timer
 systemctl list-timers --all
 ```
 
-Para o comportamento de timer, **`systemd timer` com `Persistent=true` é a opção recomendada**.
+Para o comportamento de timer, **`systemd timer` com `Persistent=true` é a opção recomendada** — se o sistema estiver desligado no horário agendado, a execução ocorre assim que o sistema voltar a ligar.
