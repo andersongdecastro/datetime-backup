@@ -45,7 +45,7 @@ copiar/editar.
 - **Exclusões:** `go`, `snap`
 - **Ocultos incluídos:** `.ssh`
 - **Nome do arquivo:** `${PREFIXO}_AAAA-MM-DD_HH-MM.tar.zst`
-- **Retenção:** mantém apenas os **3** backups mais recentes
+- **Retenção:** mantém apenas os **2** backups mais recentes
 
 ### v2 — `datetime-backup-v2-0.sh`
 
